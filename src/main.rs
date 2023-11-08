@@ -2,15 +2,13 @@ use askama::Template;
 use axum::{response::IntoResponse, routing::get, Router};
 
 #[derive(Template)]
-#[template(path = "hello.html")]
-struct HelloTemplate<'a> {
-    name: &'a str,
-}
+#[template(path = "home.html")]
+struct HomeTemplate;
 
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        .route("/", get(|| async { HelloTemplate { name: "world" } }))
+        .route("/", get(|| async { HomeTemplate }))
         .route(
             "/pico.css",
             get(|| async {

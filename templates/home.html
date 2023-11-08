@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %} The group of ridiculous detectives {% endblock %}
+{% block content %}
+
+<main class="container">
+    <section>
+        <h2>Create or join game</h2>
+        <form>
+            <input type="text" name="name" placeholder="Your name" aria-label="Your name" required />
+            <input type="text" name="roomid" placeholder="Room ID, leave blank to create a new one"
+                aria-label="Room ID" />
+            <button type="submit">Start</button>
+        </form>
+    </section>
+</main>
+
+{% endblock %}
