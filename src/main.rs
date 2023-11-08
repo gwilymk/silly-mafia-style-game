@@ -120,6 +120,7 @@ struct GameContent {
 }
 
 struct GamePageState {
+    room_id: String,
     players: Vec<Player>,
 }
 
@@ -134,7 +135,7 @@ async fn game(
 ) -> Response {
     let games = &mut state.inner.lock().unwrap().games;
 
-    let Some(game) = games.get_mut(&RoomId(room_id)) else {
+    let Some(game) = games.get_mut(&RoomId(room_id.clone())) else {
         return ().into_response();
     };
 
@@ -146,9 +147,11 @@ async fn game(
         })
         .collect();
 
+    let game = GamePageState { players, room_id };
+
     if headers.contains_key("HX-Trigger") {
-        GameContent { players }.into_response()
+        GameContent { game }.into_response()
     } else {
-        GamePage { players }.into_response()
+        GamePage { game }.into_response()
     }
 }

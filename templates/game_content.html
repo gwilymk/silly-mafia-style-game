@@ -1,4 +1,5 @@
 <section id="game-content" class="container" hx-get hx-trigger="every 2s" hx-swap="outerHTML">
+    <h3>Room ID: {{ game.room_id }}</h3>
     <h3>Players</h3>
     <ul>
         {% for player in game.players %}
