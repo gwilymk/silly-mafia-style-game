@@ -110,12 +110,16 @@ async fn start_game(
 #[derive(Template)]
 #[template(path = "game_page.html")]
 struct GamePage {
-    players: Vec<Player>,
+    game: GamePageState,
 }
 
 #[derive(Template)]
 #[template(path = "game_content.html")]
 struct GameContent {
+    game: GamePageState,
+}
+
+struct GamePageState {
     players: Vec<Player>,
 }
 
