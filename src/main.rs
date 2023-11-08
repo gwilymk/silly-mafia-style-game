@@ -13,6 +13,8 @@ use axum::{
 };
 use serde::Deserialize;
 
+mod game;
+
 #[derive(Template)]
 #[template(path = "home.html")]
 struct HomeTemplate;
@@ -24,16 +26,11 @@ struct AppState {
 
 #[derive(Debug, Default)]
 struct AppStateInner {
-    games: HashMap<RoomId, Game>,
+    games: HashMap<RoomId, game::Game>,
 }
 
 #[derive(Clone, Hash, Debug, PartialEq, Eq)]
 struct RoomId(String);
-
-#[derive(Debug, Default)]
-struct Game {
-    players: Vec<String>,
-}
 
 #[tokio::main]
 async fn main() {
@@ -85,7 +82,7 @@ async fn start_game(
 
     let room_id = if start_game_request.roomid.is_empty() {
         let room_id = "1234";
-        let game = Game::default();
+        let game = game::Game::default();
         games.insert(RoomId(room_id.to_string()), game);
         room_id.to_string()
     } else {
