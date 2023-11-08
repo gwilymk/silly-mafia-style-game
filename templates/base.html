@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{% block title %}{{ title }}{% endblock %}</title>
+
+    <link rel="stylesheet" href="/pico.css">
+    <script src="/htmx.js"></script>
+</head>
+
+<body>
+    {% block content %}
+    <h1>Placeholder content</h1>
+    {% endblock %}
+</body>
+
+</html>
