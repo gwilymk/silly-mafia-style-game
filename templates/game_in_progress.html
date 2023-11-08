@@ -11,13 +11,13 @@ You died sorry...
     <button hx-post="{{ game.player_id }}/investigate/{{ player.id }}">{{ player.name }}</button>
     {% endif %}
     {% endfor %}
-
-    {% match in_progress_game.investigate_result %}
-    {% when Some(InvestigateResult::YouThinkMafia) %}They are mafia!
-    {% when Some(InvestigateResult::YouThinkDetective) %}They are a detective!
-    {% when Some(InvestigateResult::TheyDied) %}They died before you could investigate!
-    {% when Some(InvestigateResult::YouAreDead) %}You died...
-    {% when None %}
-    {% endmatch %}
 </div>
+
+{% match in_progress_game.investigate_result %}
+{% when Some(InvestigateResult::YouThinkMafia) %}They are mafia!
+{% when Some(InvestigateResult::YouThinkDetective) %}They are a detective!
+{% when Some(InvestigateResult::TheyDied) %}They died before you could investigate!
+{% when Some(InvestigateResult::YouAreDead) %}You died...
+{% when None %}
+{% endmatch %}
 {% endif %}
