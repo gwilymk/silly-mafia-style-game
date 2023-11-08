@@ -1,5 +1,10 @@
 use askama::Template;
-use axum::{response::IntoResponse, routing::get, Router};
+use axum::{
+    response::IntoResponse,
+    routing::{get, post},
+    Form, Router,
+};
+use serde::Deserialize;
 
 #[derive(Template)]
 #[template(path = "home.html")]
@@ -28,10 +33,21 @@ async fn main() {
                 )
                     .into_response()
             }),
-        );
+        )
+        .route("/start", post(start_game));
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+#[derive(Deserialize, Debug)]
+struct StartGameRequest {
+    name: String,
+    roomid: String,
+}
+
+async fn start_game(Form(start_game_request): Form<StartGameRequest>) {
+    dbg!(start_game_request);
 }
