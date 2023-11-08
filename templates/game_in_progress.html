@@ -21,3 +21,7 @@ You died sorry...
 {% when None %}
 {% endmatch %}
 {% endif %}
+
+{% if !in_progress_game.is_detective %}
+<button hx-post="start">Restart game</button>
+{% endif %}
