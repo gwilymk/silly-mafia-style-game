@@ -11,6 +11,7 @@ use axum::{
     routing::{get, post},
     Form, Router,
 };
+use game::InvestigateResult;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::Deserialize;
 
@@ -59,8 +60,9 @@ async fn main() {
                     .into_response()
             }),
         )
-        .route("/start", post(start_game))
+        .route("/start", post(new_game))
         .route("/game/:id/:player_id", get(game))
+        .route("/game/:id/start", post(start_game))
         .with_state(shared_state);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
@@ -84,7 +86,7 @@ fn random_player_id() -> String {
     random_room_id()
 }
 
-async fn start_game(
+async fn new_game(
     State(state): State<Arc<AppState>>,
     Form(start_game_request): Form<StartGameRequest>,
 ) -> Response {
@@ -104,10 +106,10 @@ async fn start_game(
     };
 
     let player_id = random_player_id();
-    game.players.push(game::Player {
-        name: start_game_request.name,
-        id: player_id.clone(),
-    });
+    game.players.push(game::Player::new(
+        start_game_request.name,
+        player_id.clone(),
+    ));
 
     let mut headers = HeaderMap::new();
     headers.insert(
@@ -133,11 +135,17 @@ struct GameContent {
 struct GamePageState {
     room_id: String,
     players: Vec<Player>,
+    in_progress_game: Option<InProgressGame>,
 }
 
 struct Player {
     name: String,
     is_you: bool,
+}
+
+struct InProgressGame {
+    is_detective: bool,
+    investigate_result: Option<InvestigateResult>,
 }
 
 async fn game(
@@ -164,11 +172,39 @@ async fn game(
         })
         .collect();
 
-    let game = GamePageState { players, room_id };
+    let in_progress_game = if matches!(game.state, game::GameState::Playing) {
+        let is_detective = current_player.role.unwrap().is_detective();
+        let investigate_result = current_player.result;
+
+        Some(InProgressGame {
+            is_detective,
+            investigate_result,
+        })
+    } else {
+        None
+    };
+
+    let game = GamePageState {
+        players,
+        room_id,
+        in_progress_game,
+    };
 
     if headers.contains_key("HX-Trigger") {
         GameContent { game }.into_response()
     } else {
         GamePage { game }.into_response()
     }
+}
+
+async fn start_game(Path(room_id): Path<String>, State(state): State<Arc<AppState>>) -> Response {
+    let games = &mut state.inner.lock().unwrap().games;
+
+    let Some(game) = games.get_mut(&RoomId(room_id.clone())) else {
+        return ().into_response();
+    };
+
+    game.start();
+
+    ().into_response()
 }

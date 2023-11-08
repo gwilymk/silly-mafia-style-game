@@ -6,4 +6,11 @@
         <li>{{ player.name }} {% if player.is_you %}(you){% endif %}</li>
         {% endfor %}
     </ul>
+
+    {% match game.in_progress_game %}
+    {% when Some with (game) %}
+    {% include "game_in_progress.html" %}
+    {% when None %}
+    <button hx-post="start">Start game</button>
+    {% endmatch %}
 </section>
