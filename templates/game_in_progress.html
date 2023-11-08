@@ -1,0 +1,23 @@
+<h3>You are {% if in_progress_game.is_detective %}a detective{% else %}mafia{% endif %}</h3>
+
+<h3>Who would you like to {% if in_progress_game.is_detective %}investigate{% else %}kill{% endif %}?</h3>
+
+{% if in_progress_game.investigate_result == Some(InvestigateResult::YouAreDead) %}
+You died sorry...
+{% else %}
+<div class="grid">
+    {% for player in game.players %}
+    {% if !player.is_dead %}
+    <button hx-post="{{ game.player_id }}/investigate/{{ player.id }}">{{ player.name }}</button>
+    {% endif %}
+    {% endfor %}
+
+    {% match in_progress_game.investigate_result %}
+    {% when Some(InvestigateResult::YouThinkMafia) %}They are mafia!
+    {% when Some(InvestigateResult::YouThinkDetective) %}They are a detective!
+    {% when Some(InvestigateResult::TheyDied) %}They died before you could investigate!
+    {% when Some(InvestigateResult::YouAreDead) %}You died...
+    {% when None %}
+    {% endmatch %}
+</div>
+{% endif %}

@@ -1,4 +1,8 @@
 <section id="game-content" class="container" hx-get hx-trigger="every 2s" hx-swap="outerHTML">
+    {% match game.in_progress_game %}
+    {% when Some with (in_progress_game) %}
+    {% include "game_in_progress.html" %}
+    {% when None %}
     <h3>Room ID: {{ game.room_id }}</h3>
     <h3>Players</h3>
     <ul>
@@ -6,11 +10,6 @@
         <li>{{ player.name }} {% if player.is_you %}(you){% endif %}</li>
         {% endfor %}
     </ul>
-
-    {% match game.in_progress_game %}
-    {% when Some with (game) %}
-    {% include "game_in_progress.html" %}
-    {% when None %}
     <button hx-post="start">Start game</button>
     {% endmatch %}
 </section>
