@@ -60,7 +60,7 @@ async fn main() {
             }),
         )
         .route("/start", post(start_game))
-        .route("/game/:id", get(game))
+        .route("/game/:id/:player_id", get(game))
         .with_state(shared_state);
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
@@ -78,6 +78,10 @@ struct StartGameRequest {
 fn random_room_id() -> String {
     let mut rng = thread_rng();
     (0..4).map(|_| rng.sample(Alphanumeric) as char).collect()
+}
+
+fn random_player_id() -> String {
+    random_room_id()
 }
 
 async fn start_game(
@@ -99,10 +103,17 @@ async fn start_game(
         return ().into_response();
     };
 
-    game.players.push(start_game_request.name);
+    let player_id = random_player_id();
+    game.players.push(game::Player {
+        name: start_game_request.name,
+        id: player_id.clone(),
+    });
 
     let mut headers = HeaderMap::new();
-    headers.insert("Hx-Redirect", format!("/game/{}", room_id).parse().unwrap());
+    headers.insert(
+        "Hx-Redirect",
+        format!("/game/{room_id}/{player_id}").parse().unwrap(),
+    );
 
     headers.into_response()
 }
@@ -126,11 +137,12 @@ struct GamePageState {
 
 struct Player {
     name: String,
+    is_you: bool,
 }
 
 async fn game(
     headers: HeaderMap,
-    Path(room_id): Path<String>,
+    Path((room_id, player_id)): Path<(String, String)>,
     State(state): State<Arc<AppState>>,
 ) -> Response {
     let games = &mut state.inner.lock().unwrap().games;
@@ -139,11 +151,16 @@ async fn game(
         return ().into_response();
     };
 
+    let Some(current_player) = game.players.iter().find(|player| player.id == player_id) else {
+        return ().into_response();
+    };
+
     let players = game
         .players
         .iter()
         .map(|player| Player {
-            name: player.clone(),
+            name: player.name.clone(),
+            is_you: current_player.id == player.id,
         })
         .collect();
 

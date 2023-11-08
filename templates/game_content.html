@@ -3,7 +3,7 @@
     <h3>Players</h3>
     <ul>
         {% for player in game.players %}
-        <li>{{ player.name }}</li>
+        <li>{{ player.name }} {% if player.is_you %}(you){% endif %}</li>
         {% endfor %}
     </ul>
 </section>
