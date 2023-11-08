@@ -110,11 +110,21 @@ struct GamePage {
     players: Vec<Player>,
 }
 
+#[derive(Template)]
+#[template(path = "game_content.html")]
+struct GameContent {
+    players: Vec<Player>,
+}
+
 struct Player {
     name: String,
 }
 
-async fn game(Path(room_id): Path<String>, State(state): State<Arc<AppState>>) -> Response {
+async fn game(
+    headers: HeaderMap,
+    Path(room_id): Path<String>,
+    State(state): State<Arc<AppState>>,
+) -> Response {
     let games = &mut state.inner.lock().unwrap().games;
 
     let Some(game) = games.get_mut(&RoomId(room_id)) else {
@@ -129,5 +139,9 @@ async fn game(Path(room_id): Path<String>, State(state): State<Arc<AppState>>) -
         })
         .collect();
 
-    GamePage { players }.into_response()
+    if headers.contains_key("HX-Trigger") {
+        GameContent { players }.into_response()
+    } else {
+        GamePage { players }.into_response()
+    }
 }
