@@ -1,5 +1,5 @@
 use askama::Template;
-use axum::{routing::get, Router};
+use axum::{response::IntoResponse, routing::get, Router};
 
 #[derive(Template)]
 #[template(path = "hello.html")]
@@ -9,7 +9,28 @@ struct HelloTemplate<'a> {
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new().route("/", get(|| async { HelloTemplate { name: "world" } }));
+    let app = Router::new()
+        .route("/", get(|| async { HelloTemplate { name: "world" } }))
+        .route(
+            "/pico.css",
+            get(|| async {
+                (
+                    [("Content-Type", "text/css")],
+                    include_str!("../public/pico.min.css"),
+                )
+                    .into_response()
+            }),
+        )
+        .route(
+            "/htmx.js",
+            get(|| async {
+                (
+                    [("Content-Type", "text/javascript")],
+                    include_str!("../public/htmx.min.js"),
+                )
+                    .into_response()
+            }),
+        );
 
     axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
         .serve(app.into_make_service())
