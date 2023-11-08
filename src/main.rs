@@ -11,6 +11,7 @@ use axum::{
     routing::{get, post},
     Form, Router,
 };
+use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::Deserialize;
 
 mod game;
@@ -74,6 +75,11 @@ struct StartGameRequest {
     roomid: String,
 }
 
+fn random_room_id() -> String {
+    let mut rng = thread_rng();
+    (0..4).map(|_| rng.sample(Alphanumeric) as char).collect()
+}
+
 async fn start_game(
     State(state): State<Arc<AppState>>,
     Form(start_game_request): Form<StartGameRequest>,
@@ -81,10 +87,10 @@ async fn start_game(
     let games = &mut state.inner.lock().unwrap().games;
 
     let room_id = if start_game_request.roomid.is_empty() {
-        let room_id = "1234";
+        let room_id = random_room_id();
         let game = game::Game::default();
-        games.insert(RoomId(room_id.to_string()), game);
-        room_id.to_string()
+        games.insert(RoomId(room_id.clone()), game);
+        room_id
     } else {
         start_game_request.roomid
     };
